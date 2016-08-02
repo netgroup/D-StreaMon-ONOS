@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1470158941312
+Build-Jdk: 1.8.0_101
+Built-By: developer
+Bundle-Blueprint: OSGI-INF/blueprint/shell-config.xml
+Bundle-ClassPath: WEB-INF/classes
+Bundle-Description: D-StreaMon companion app for ONOS
+Bundle-ManifestVersion: 2
+Bundle-Name: D-StreaMon
+Bundle-SymbolicName: org.onosproject.D-StreaMon
+Bundle-Version: 1.7.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.onosproject.dstreamon;uses:="org.onosproject.rest";v
+ ersion="1.7.0",org.onosproject.dstreamon.cli;uses:="org.apache.karaf.sh
+ ell.commands,org.onosproject.cli";version="1.7.0",org.onosproject.dstre
+ amon.rest;uses:="javax.ws.rs,javax.ws.rs.core,org.onlab.rest,org.onospr
+ oject.rest";version="1.7.0"
+Import-Package: com.fasterxml.jackson.databind;version="[2.7,3)",com.fas
+ terxml.jackson.databind.node;version="[2.7,3)",javax.ws.rs;version="[2.
+ 0,3)",javax.ws.rs.core;version="[2.0,3)",org.apache.karaf.shell.command
+ s;version="[3.0,4)",org.onlab.rest;version="[1.7,2)",org.onosproject.cl
+ i;version="[1.7,2)",org.onosproject.rest;version="[1.7,2)",org.osgi.ser
+ vice.blueprint;version="[1.0.0,2.0.0)",org.slf4j;version="[1.6,2)",org.
+ glassfish.jersey.servlet;version="[2.22,3)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Service-Component: OSGI-INF/org.onosproject.dstreamon.AppComponent.xml,O
+ SGI-INF/org.onosproject.dstreamon.ApiDocRegistrator.xml
+Tool: Bnd-3.0.0.201509101326
+Web-ContextPath: /onos/d-streamon

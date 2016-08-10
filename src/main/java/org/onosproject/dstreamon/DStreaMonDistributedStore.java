@@ -52,13 +52,13 @@ public class DStreaMonDistributedStore implements DStreaMonStore {
     private Map<String, String> dstreamonMgmtIfaceMap;
     private ConsistentMap<String, String> dstreamonMgmtIfaceConsistentMap;
 
-    private static String errorPutStack = "It is not possible to add %s stack" +
+    private static String errorPutStack = "It is not possible to add %s stack " +
             "because it exists";
 
-    private static String errorPutMgmtIface = "It is not possible to add %s iface" +
+    private static String errorPutMgmtIface = "It is not possible to add %s iface " +
             "because it exists";
 
-    private static String errorGetMgmtIface = "It is not possible to retrieve %s iface" +
+    private static String errorGetMgmtIface = "It is not possible to retrieve %s iface " +
             "because it does not exist";
 
     /**
@@ -116,7 +116,7 @@ public class DStreaMonDistributedStore implements DStreaMonStore {
     public void putStack(DStreaMonStack stack) throws DStreaMonException {
 
         DStreaMonStack previous = dStreaMonStackMap.putIfAbsent(stack.stackUuid().value(), stack);
-        if (previous != null && !previous.equals(stack)) {
+        if (previous != null && previous.equals(stack)) {
             throw new DStreaMonException(String.format(errorPutStack, stack.stackUuid().value()));
         }
 
@@ -133,7 +133,7 @@ public class DStreaMonDistributedStore implements DStreaMonStore {
     public void putMgmtIface(Uuid probeUuid, String ifaceName) throws DStreaMonException {
 
         String previous = dstreamonMgmtIfaceMap.putIfAbsent(probeUuid.value(), ifaceName);
-        if (previous != null && !previous.equals(ifaceName)) {
+        if (previous != null && previous.equals(ifaceName)) {
             throw new DStreaMonException(String.format(errorPutMgmtIface, ifaceName));
         }
 

@@ -1,0 +1,9 @@
+{
+    "devices":{
+        "ovsdb:172.16.131.1":{
+            "basic":{
+                "driver":"ovs"
+            }
+        }
+    }
+} 

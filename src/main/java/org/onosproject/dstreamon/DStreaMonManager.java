@@ -17,18 +17,93 @@
 package org.onosproject.dstreamon;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.apache.felix.scr.annotations.Service;
+import org.onlab.packet.VlanId;
+import org.onosproject.core.ApplicationId;
+import org.onosproject.core.CoreService;
+import org.onosproject.net.DefaultAnnotations;
+import org.onosproject.net.DeviceId;
+import org.onosproject.net.PortNumber;
+import org.onosproject.net.behaviour.BridgeConfig;
+import org.onosproject.net.behaviour.BridgeName;
+import org.onosproject.net.behaviour.DefaultMirroringDescription;
+import org.onosproject.net.behaviour.MirroringConfig;
+import org.onosproject.net.behaviour.MirroringDescription;
+import org.onosproject.net.behaviour.MirroringName;
+import org.onosproject.net.driver.DriverHandler;
+import org.onosproject.net.driver.DriverService;
 import org.onosproject.ovsdb.rfc.notation.Uuid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 /**
- * Implements org.onosproject.dstreamon.DStreaMonService.
+ * Implements DStreaMonService.
  */
 @Component(immediate = true)
 @Service
 public class DStreaMonManager implements DStreaMonService {
+
+    private static final String DSTREAMON_APP = "org.onosproject.D-StreaMon";
+    private static Logger log = LoggerFactory.getLogger(DStreaMonManager.class);
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected DStreaMonStore dStreaMonStore;
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected CoreService coreService;
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected DriverService driverService;
+
+    protected ApplicationId appId;
+
+    protected MirroringConfig mirroringConfig;
+    protected BridgeConfig bridgeConfig;
+
+    private static final String ERROR_MIRRORING = "Impossible to Add Mirroring for stack %s";
+
+    private static final String CANARY_OVSDB_ID = "ovsdb:172.16.131.1";
+    private static final String BR_INT = "br-int";
+    private static final String BR_MGMT = "br-mgmt";
+
+    private Random random;
+
+
+
+
+    @Activate
+    protected void activate() {
+
+        appId = coreService.registerApplication(DSTREAMON_APP);
+        random = new Random();
+
+        DeviceId deviceId = DeviceId.deviceId(CANARY_OVSDB_ID);
+        DriverHandler h = driverService.createHandler(deviceId);
+        mirroringConfig = h.behaviour(MirroringConfig.class);
+        bridgeConfig = h.behaviour(BridgeConfig.class);
+
+        log.info("Started");
+
+    }
+
+    @Deactivate
+    protected void deactivate() {
+
+        log.info("Stopped");
+
+    }
+
     /**
      * Registers the data of a new stack created through OpenStack Heat.
      * Realized the port mirroring and creates the mgmt interface.
@@ -36,8 +111,64 @@ public class DStreaMonManager implements DStreaMonService {
      * @param stack the stack data to register
      */
     @Override
-    public void registerStack(DStreaMonStack stack) {
+    public void registerStack(DStreaMonStack stack) throws DStreaMonException {
 
+        dStreaMonStore.putStack(stack);
+
+        /**
+         * OpenStack Heat provides only the interfaces ids, for mirroring
+         * we need the port uuid, thus we need this intermediate step of retrieving
+         * port names.
+         */
+        List<String> ifaceids = Arrays.asList(stack.userPortUuid().value());
+        List<PortNumber> ports = bridgeConfig.getLocalPorts(ifaceids);
+        String userPortName = ports.get(0).name();
+        ifaceids = Arrays.asList(stack.probePortUuid().value());
+        ports = bridgeConfig.getLocalPorts(ifaceids);
+        String probePortName = ports.get(0).name();
+
+        MirroringName mirroringName = MirroringName.mirroringName(stack.stackUuid().value());
+        List<String> selectSrcPorts = Arrays.asList(userPortName);
+        List<String> selectDstPorts = Arrays.asList();
+        List<VlanId> selectVlanIds = Arrays.asList();
+        Optional<String> outputPort = Optional.of(probePortName);
+        Optional<VlanId> outputVlan = Optional.empty();
+
+        DefaultAnnotations.Builder optionBuilder = DefaultAnnotations.builder();
+        MirroringDescription mirroringDescription = new DefaultMirroringDescription(
+                mirroringName,
+                selectSrcPorts,
+                selectDstPorts,
+                selectVlanIds,
+                outputPort,
+                outputVlan,
+                optionBuilder.build()
+        );
+
+        if (mirroringConfig.addMirroring(BridgeName.bridgeName(BR_INT), mirroringDescription)) {
+
+            String ifaceName = nextIfaceName();
+            bridgeConfig.addPort(BridgeName.bridgeName(BR_MGMT), ifaceName);
+
+            dStreaMonStore.putMgmtIface(stack.probeUuid(), ifaceName);
+
+            return;
+
+        }
+
+        throw new DStreaMonException(String.format(ERROR_MIRRORING, stack.stackUuid()));
+
+    }
+
+    private String nextIfaceName() {
+        char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+        String output = sb.toString();
+        return output;
     }
 
     /**
@@ -73,9 +204,9 @@ public class DStreaMonManager implements DStreaMonService {
     }
 
     /**
-     * Returns the uuids of the management ports.
+     * Returns the uuids of the probes.
      *
-     * @return the uuids set of the management ports.
+     * @return the uuids set of the probes.
      */
     @Override
     public Set<Uuid> getMgmtPorts() {
@@ -85,11 +216,11 @@ public class DStreaMonManager implements DStreaMonService {
     /**
      * Retrieves the name of the mgmt port.
      *
-     * @param stackuuid the uuid of the associated stack
+     * @param probeUuid the uuid of the associated probe
      * @return the name of the mgmt port
      */
     @Override
-    public String getMgmtPort(Uuid stackuuid) {
-        return null;
+    public String getMgmtPort(Uuid probeUuid) throws DStreaMonException {
+        return dStreaMonStore.getMgmtIface(probeUuid);
     }
 }

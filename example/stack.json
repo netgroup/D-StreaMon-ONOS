@@ -1,0 +1,15 @@
+{
+	"stack_uuid": "a68decaa-97fa-46a0-b1c6-ccf39fa61f4b",
+	"user": {
+		"uuid": "0a9e9ce4-301e-4bcb-a0c4-eb00930f27b2",
+		"ip": "10.0.10.60",
+		"mac": "fa:16:3e:58:73:5d",
+		"port_uuid": "a17772e6-e451-46e5-838f-73a2adc0d2a9"
+	},
+	"probe": {
+		"uuid": "e3f57693-dc80-42d9-b6df-c963eb92bbe0",
+		"ip": "10.0.10.59",
+		"mac": "fa:16:3e:cb:9b:51",
+		"port_uuid": "81765d17-d822-4ff3-baf8-019fe81b1f45"
+	}
+}

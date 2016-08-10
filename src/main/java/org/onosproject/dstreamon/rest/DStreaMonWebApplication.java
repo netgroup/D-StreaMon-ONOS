@@ -16,31 +16,16 @@
 
 package org.onosproject.dstreamon.rest;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.onosproject.rest.AbstractWebResource;
+import org.onlab.rest.AbstractWebApplication;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-
-import static org.onlab.util.Tools.nullIsNotFound;
+import java.util.Set;
 
 /**
- * Sample web resource.
+ * Sample REST API web application.
  */
-@Path("sample")
-public class AppWebResource extends AbstractWebResource {
-
-    /**
-     * Get hello world greeting.
-     *
-     * @return 200 OK
-     */
-    @GET
-    @Path("hello")
-    public Response getGreeting() {
-        ObjectNode node = mapper().createObjectNode().put("hello", "world");
-        return ok(node).build();
+public class DStreaMonWebApplication extends AbstractWebApplication {
+    @Override
+    public Set<Class<?>> getClasses() {
+        return getClasses(StackResource.class, MgmtInterfaceResource.class);
     }
-
 }

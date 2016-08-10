@@ -29,15 +29,16 @@ public interface DStreaMonService {
 
     /**
      * Registers the data of a new stack created through OpenStack Heat.
-     * Realized the port mirroring and creates the mgmt interface.
+     * Realizes the port mirroring and creates the mgmt interface.
      *
      * @param stack the stack data to register
+     * @throws DStreaMonException if the registration fails
      */
-    void registerStack(DStreaMonStack stack);
+    void registerStack(DStreaMonStack stack) throws DStreaMonException;
 
     /**
      * Uregisters a stack created previously through OpenStack Heat.
-     * Delete also the port mirroring and the mgmt interface.
+     * Deletes also the port mirroring and the mgmt interface.
      *
      * @param stackuuid the stack uuid to unregister
      */
@@ -59,19 +60,20 @@ public interface DStreaMonService {
     DStreaMonStack getStack(Uuid stackuuid);
 
     /**
-     * Returns the uuids of the management ports.
+     * Returns the uuids of the probes.
      *
-     * @return the uuids set of the management ports.
+     * @return the uuids set of the probes.
      */
     Set<Uuid> getMgmtPorts();
 
     /**
      * Retrieves the name of the mgmt port.
      *
-     * @param stackuuid the uuid of the associated stack
+     * @param probeUuid the uuid of the associated probe
      * @return the name of the mgmt port
+     * @throws DStreaMonException if mgmt interface does not exist
      */
-    String getMgmtPort(Uuid stackuuid);
+    String getMgmtPort(Uuid probeUuid) throws DStreaMonException;
 
 
 }

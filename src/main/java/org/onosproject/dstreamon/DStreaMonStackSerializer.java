@@ -22,11 +22,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.onlab.packet.Ip4Address;
 import org.onlab.packet.MacAddress;
-import org.onlab.packet.VlanId;
-import org.onosproject.net.ConnectPoint;
 import org.onosproject.ovsdb.rfc.notation.Uuid;
-
-import java.util.List;
 
 /**
  * Kryo serializer for SDX-L2 connection point.
@@ -41,15 +37,15 @@ public class DStreaMonStackSerializer extends Serializer<DStreaMonStack> {
      * @param object the object to serialize
      */
     public void write(Kryo kryo, Output output, DStreaMonStack object) {
-        kryo.writeClassAndObject(output, object.stackUuid());
-        kryo.writeClassAndObject(output, object.userUuid());
-        kryo.writeClassAndObject(output, object.probeUuid());
+        kryo.writeClassAndObject(output, object.stackUuid().value());
+        kryo.writeClassAndObject(output, object.userUuid().value());
+        kryo.writeClassAndObject(output, object.probeUuid().value());
         kryo.writeClassAndObject(output, object.userIp());
         kryo.writeClassAndObject(output, object.probeIp());
         kryo.writeClassAndObject(output, object.userMac());
         kryo.writeClassAndObject(output, object.probeMac());
-        kryo.writeClassAndObject(output, object.userPortUuid());
-        kryo.writeClassAndObject(output, object.probePortUuid());
+        kryo.writeClassAndObject(output, object.userPortUuid().value());
+        kryo.writeClassAndObject(output, object.probePortUuid().value());
     }
 
     /**
@@ -61,9 +57,9 @@ public class DStreaMonStackSerializer extends Serializer<DStreaMonStack> {
      * @return the object
      */
     public DStreaMonStack read(Kryo kryo, Input input, Class<DStreaMonStack> type) {
-        Uuid stackUuid = (Uuid) kryo.readClassAndObject(input);
-        Uuid userUuid = (Uuid) kryo.readClassAndObject(input);
-        Uuid probeUuid = (Uuid) kryo.readClassAndObject(input);
+        Uuid stackUuid = Uuid.uuid((String) kryo.readClassAndObject(input));
+        Uuid userUuid = Uuid.uuid((String) kryo.readClassAndObject(input));
+        Uuid probeUuid = Uuid.uuid((String) kryo.readClassAndObject(input));
 
         Ip4Address userIp = (Ip4Address) kryo.readClassAndObject(input);
         Ip4Address probeIp = (Ip4Address) kryo.readClassAndObject(input);
@@ -71,8 +67,8 @@ public class DStreaMonStackSerializer extends Serializer<DStreaMonStack> {
         MacAddress userMac = (MacAddress) kryo.readClassAndObject(input);
         MacAddress probeMac = (MacAddress) kryo.readClassAndObject(input);
 
-        Uuid userPortUuid = (Uuid) kryo.readClassAndObject(input);
-        Uuid probePortUuid = (Uuid) kryo.readClassAndObject(input);
+        Uuid userPortUuid = Uuid.uuid((String) kryo.readClassAndObject(input));
+        Uuid probePortUuid = Uuid.uuid((String) kryo.readClassAndObject(input));
 
         return new DStreaMonStack(stackUuid, userUuid, probeUuid,
                                   userIp, probeIp,

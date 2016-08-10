@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0" immediate="true" name="org.onosproject.dstreamon.DStreaMonManager">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="org.onosproject.dstreamon.DStreaMonManager" activate="activate" deactivate="deactivate">
     <implementation class="org.onosproject.dstreamon.DStreaMonManager"/>
     <service servicefactory="false">
         <provide interface="org.onosproject.dstreamon.DStreaMonService"/>
     </service>
     <property name="service.pid" value="org.onosproject.dstreamon.DStreaMonManager"/>
+    <reference name="dStreaMonStore" interface="org.onosproject.dstreamon.DStreaMonStore" cardinality="1..1" policy="static" bind="bindDStreaMonStore" unbind="unbindDStreaMonStore"/>
+    <reference name="coreService" interface="org.onosproject.core.CoreService" cardinality="1..1" policy="static" bind="bindCoreService" unbind="unbindCoreService"/>
+    <reference name="driverService" interface="org.onosproject.net.driver.DriverService" cardinality="1..1" policy="static" bind="bindDriverService" unbind="unbindDriverService"/>
 </scr:component>
